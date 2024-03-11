@@ -1,6 +1,7 @@
 #ifndef HUFFUNCTIONS_H
 #define HUFFUNCTIONS_H
 
+
 // Structs base do Huffman
 
 typedef struct node{
@@ -20,11 +21,12 @@ typedef struct defaultNode{
 
 //Funções do Huffman
 
-void printByteBinary(unsigned char byte);
-void searchNewBinary(Node *tree, int byte, DefaultNode *nodeBinary);
+void printByteBinary(char *binary, unsigned char byte);
+void searchNewBinary(FILE *fileEncrypty, Node *tree, int byte, DefaultNode *nodeBinary);
 void writeNewByte(DefaultNode *node, FILE *file);
 void freeAllTree(Node *tree);
-void leFrequencia(int *array, char *minhaString);
+int leFrequencia(int *array, char *minhaString);
 void escreverNovoBin(char *minhaString, Node *pq);
-
+void preOrderTree(FILE* file,Node *tree);
+void tamanhoDaArvore(Node *tree, int *tamanho);
 #endif

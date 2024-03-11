@@ -3,6 +3,7 @@
         "stdio.h": "c",
         "stdlib.h": "c",
         "fila.h": "c",
-        "huffunctions.h": "c"
+        "huffunctions.h": "c",
+        "linked.h": "c"
     }
 }
