@@ -5,5 +5,6 @@
 
 struct defaultNode* createDefaultNode(DefaultNode *node, int item);
 void removeDefaultNode(DefaultNode *node);
+void freeAllDefaultNode(DefaultNode *node);
 
 #endif

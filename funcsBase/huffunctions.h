@@ -15,6 +15,7 @@ typedef struct node{
 // Linked List
 typedef struct defaultNode{
     int item;
+    int currentSize;
     struct defaultNode *next;
 } DefaultNode;
 
@@ -22,8 +23,9 @@ typedef struct defaultNode{
 //Funções do Huffman
 
 void printByteBinary(char *binary, unsigned char byte);
-void searchNewBinary(FILE *fileEncrypty, Node *tree, int byte, DefaultNode *nodeBinary);
-void writeNewByte(DefaultNode *node, FILE *file);
+void searchNewBinary(FILE *fileEncrypty, Node *tree, int byte, DefaultNode *nodeSearch, DefaultNode **nodeByte);
+void writeNewBits(DefaultNode *node, FILE *file, DefaultNode **nodeByte);
+void writeNewByte(DefaultNode *nodeByte, FILE *file);
 void freeAllTree(Node *tree);
 int leFrequencia(int *array, char *minhaString);
 void escreverNovoBin(char *minhaString, Node *pq);
