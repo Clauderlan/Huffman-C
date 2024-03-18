@@ -16,38 +16,42 @@ void printByteBinary(char *binary, unsigned char byte){
         binary[7 - i] = (byte >> i) & 1 ? '1' : '0';
     }
 }
-void writeNewByte(DefaultNode *nodeByte,FILE *file){
+
+void writeNewByte(int *bits, FILE *file) {
     unsigned char byte = 0;
-    for(int i = 0; i < 8; i++){
-        byte = byte << 1;
-        byte = byte | nodeByte->item;
-        nodeByte = nodeByte->next;
+    // Construir o byte a partir dos bits
+    for (int i = 0; i < 8; i++) {
+        byte |= (bits[i] & 0x01) << (7 - i);
     }
-    
-    fprintf(file, "%c", byte);
-}
-void writeNewBits(DefaultNode *node, FILE *file, DefaultNode **nodeByte){
-    if(node == NULL) return;
-    writeNewBits(node->next, file, nodeByte);
-    *nodeByte = createDefaultNode(*nodeByte, node->item);
-    if((*nodeByte)->currentSize == 8){
-        writeNewByte(*nodeByte, file);
-        freeAllDefaultNode(*nodeByte);
-        *nodeByte = NULL;
-    }
-    free(node); // Volta limpando toda a lista.
+    // Escrever o byte no arquivo
+    fputc(byte, file);
 }
 
-void searchNewBinary(FILE *fileEncrypty, Node *tree, int byte, DefaultNode *nodeSearch, DefaultNode **nodeByte){
+
+
+void writeNewBits(DefaultNode *node, FILE *file, int* bitsToByte, int *contBitsToByte){
+    if(node == NULL) return;
+    writeNewBits(node->next, file, bitsToByte, contBitsToByte);
+    // 01010100
+    bitsToByte[*contBitsToByte] = node->item;
+    (*contBitsToByte)++;
+    
+    if(*contBitsToByte == 8){
+        writeNewByte(bitsToByte, file);
+        *contBitsToByte = 0;
+    }
+}
+
+void searchNewBinary(FILE *fileEncrypty, Node *tree, int byte, DefaultNode *nodeSearch, int *bitsToByte, int *contBitsToByte){
     
     if(tree != NULL){
         if(tree->item == byte){
-            writeNewBits(nodeSearch, fileEncrypty, nodeByte);
+            writeNewBits(nodeSearch, fileEncrypty, bitsToByte, contBitsToByte);
             return;
         } // Retornando o caminho até a folha que representa o byte.
         else{
-            searchNewBinary(fileEncrypty, tree->left, byte, createDefaultNode(nodeSearch, 0), nodeByte);
-            searchNewBinary(fileEncrypty,tree->right, byte, createDefaultNode(nodeSearch, 1), nodeByte);
+            searchNewBinary(fileEncrypty, tree->left, byte, createDefaultNode(nodeSearch, 0), bitsToByte, contBitsToByte);
+            searchNewBinary(fileEncrypty, tree->right, byte, createDefaultNode(nodeSearch, 1), bitsToByte, contBitsToByte);
         }
     }else removeDefaultNode(nodeSearch);
     // Remove o ultimo elemento do caminho até adicionado.
@@ -84,14 +88,15 @@ void escreverNovoBin(char *minhaString, Node *pq){
     FILE *file = fopen(minhaString, "rb"); // Lê os bits do arquivo, 'rb' -> Read Binary
     FILE *fileEncrypty = fopen("encrypted.7", "wb"); // Escreve os bits do arquivo, 'wb' -> Write Binary
     unsigned char byte;
-    DefaultNode *nodeByte = (DefaultNode *) malloc((sizeof(DefaultNode)));
-    nodeByte = NULL;
+    int bits[8];
+    int contBitsToByte = 0;
     while (fscanf(file, "%c", &byte) != EOF)
-        searchNewBinary(fileEncrypty,pq, byte, NULL, &nodeByte);
+        searchNewBinary(fileEncrypty,pq, byte, NULL, bits, &contBitsToByte);
+
     printf("Calculando o lixo...\n");
     int lixo = 0;
-    if(nodeByte != NULL){
-        lixo = 8 - nodeByte->currentSize;
+    if(contBitsToByte != 0){
+        lixo = 8 - contBitsToByte;
     }
     
     int tamanho = 0;
@@ -100,7 +105,7 @@ void escreverNovoBin(char *minhaString, Node *pq){
     // Tenho o tamanho da arvore, o lixo e o arquivo compactado.
     // Agora vou escrever o cabeçalho.
 
-    FILE *fileHeader = fopen("header.7", "wb");
+    FILE *fileHeader = fopen("file.7", "wb");
 
     printf("Escrevendo o cabeçalho do arquivo...\n");
     unsigned char byte1, byte2;
@@ -111,25 +116,23 @@ void escreverNovoBin(char *minhaString, Node *pq){
     
     preOrderTree(fileHeader, pq);
     fclose(fileEncrypty);
-    fileEncrypty = fopen("encrypted.txt", "rb");
+    fileEncrypty = fopen("encrypted.7", "rb");
 
     unsigned char ch;
     while (fscanf(fileEncrypty, "%c", &ch) != EOF) {
         fputc(ch, fileHeader);    
     }
 
-    
     if(lixo > 0){
-        while (nodeByte != NULL) {
-            byte = (byte << 1) | nodeByte->item;
-            nodeByte = nodeByte->next;
+        for(int x = 8 - lixo; x < 8; x++){
+            bits[x] = 0;
         }
-        byte = byte << lixo;
-        fputc(byte, fileHeader);
+        writeNewByte(bits, fileHeader);
     }
     
     fclose(fileHeader);
     fclose(fileEncrypty);
+    remove("encrypted.7");
 }
 
 void preOrderTree(FILE* file,Node *tree){

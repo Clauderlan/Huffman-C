@@ -29,10 +29,10 @@ int main()
     criarArvoreDeHuffman(pq); // Criando a árvore de Huffman.
     
     // "pq" agora guarda a raiz da arvóre de Huffman.
-    printf("Escrevendo o novo binário do arquivo, agora compactado, resultado em : encrypted.7\n");
+    printf("Escrevendo o novo binário do arquivo, agora compactado.\n");
     escreverNovoBin(minhaString, pq->head); // Escrevendo o novo arquivo.
     
-    printf("Feito, arquivo compactado com sucesso!\nResultado em: header.7");
+    printf("Feito, arquivo compactado com sucesso!\nResultado em: file.7");
     freeAllTree(pq->head);
     free(pq);
     
